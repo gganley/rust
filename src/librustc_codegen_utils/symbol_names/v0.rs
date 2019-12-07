@@ -264,7 +264,7 @@ impl Printer<'tcx> for SymbolMangler<'tcx> {
         let parent_def_id = DefId { index: key.parent.unwrap(), ..impl_def_id };
 
         let mut param_env = self.tcx.param_env(impl_def_id)
-            .with_reveal_all();
+            .with_reveal_all_normalized(self.tcx);
         if !substs.is_empty() {
             param_env = param_env.subst(self.tcx, substs);
         }

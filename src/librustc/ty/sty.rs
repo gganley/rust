@@ -2319,7 +2319,7 @@ impl<'tcx> Const<'tcx> {
         ty: Ty<'tcx>,
     ) -> Option<u128> {
         assert_eq!(self.ty, ty);
-        let size = tcx.layout_of(param_env.with_reveal_all().and(ty)).ok()?.size;
+        let size = tcx.layout_of(param_env.with_reveal_all_normalized(tcx).and(ty)).ok()?.size;
         // if `ty` does not depend on generic parameters, use an empty param_env
         self.eval(tcx, param_env).val.try_to_bits(size)
     }
@@ -2331,7 +2331,7 @@ impl<'tcx> Const<'tcx> {
         param_env: ParamEnv<'tcx>,
     ) -> &Const<'tcx> {
         let try_const_eval = |did, param_env: ParamEnv<'tcx>, substs| {
-            let param_env_and_substs = param_env.with_reveal_all().and(substs);
+            let param_env_and_substs = param_env.with_reveal_all_normalized(tcx).and(substs);
 
             // Avoid querying `tcx.const_eval(...)` with any e.g. inference vars.
             if param_env_and_substs.has_local_value() {

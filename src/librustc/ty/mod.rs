@@ -1666,7 +1666,7 @@ impl<'tcx> ParamEnv<'tcx> {
     /// environments like codegen or doing optimizations.
     ///
     /// N.B., if you want to have predicates in scope, use `ParamEnv::new`,
-    /// or invoke `param_env.with_reveal_all()`.
+    /// or invoke `param_env.with_reveal_all_normalized()`.
     #[inline]
     pub fn reveal_all() -> Self {
         Self::new(List::empty(), Reveal::All, None)
@@ -1688,8 +1688,14 @@ impl<'tcx> ParamEnv<'tcx> {
     /// the desired behavior during codegen and certain other special
     /// contexts; normally though we want to use `Reveal::UserFacing`,
     /// which is the default.
-    pub fn with_reveal_all(self) -> Self {
-        ty::ParamEnv { reveal: Reveal::All, ..self }
+    ///
+    /// All opaque types in the caller_bounds of the `ParamEnv`
+    /// will be normalized to their underlying types.
+    pub fn with_reveal_all_normalized(self, tcx: TyCtxt<'tcx>) -> Self {
+        let caller_bounds = tcx.normalize_impl_trait_types(
+            &self.caller_bounds
+        );
+        ty::ParamEnv { reveal: Reveal::All, caller_bounds, ..self }
     }
 
     /// Returns this same environment but with no caller bounds.
